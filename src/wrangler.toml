@@ -1,0 +1,3 @@
+name = "listiq-api"
+main = "src/index.js"
+compatibility_date = "2026-06-15"
