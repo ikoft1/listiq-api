@@ -131,9 +131,8 @@ export default {
           countries: ['GR'],
         }
 
-       if (categoryId) {
+     if (categoryId) {
   body.category = categoryId
-  body.title = q
 } else {
   body.title = q
 }
