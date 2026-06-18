@@ -18,7 +18,7 @@ export default {
         const res = await fetch('https://api.posokanei.gov.gr/products/search', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ page, page_size: 20, sort_by: 'name', sort_order: 'asc', title: q })
+          body: JSON.stringify({ page, page_size: 30, sort_by: 'name', sort_order: 'asc', title: q })
         })
         const data = await res.json()
         return new Response(JSON.stringify(data), {
