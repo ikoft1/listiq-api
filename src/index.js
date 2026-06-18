@@ -97,19 +97,16 @@ const CATEGORY_MAP = [
   ['κατεψυγ', 'b2a17c2ad4235ea8574d60276393ddb0'],
   // --- ΚΟΝΣΕΡΒΕΣ ---
   ['τον', 'b2a17c2ad4235ea8574d6027639109e5'],
-  ['κονσερβ', '8c7d31ae-f578-443f-95c2-9b5b0d2b1803'],
-  // --- ΑΡΤΟΠΟΙΕΙΟ ---
+  // --- ΑΛΛΑ ---
   ['δημητριακ', 'b2a17c2ad4235ea8574d60276384b26a'],
   ['μελ', 'b2a17c2ad4235ea8574d6027636c99fc'],
-  ['μαρμελαδ', 'HsRwDJ2CGeZGCRrjevAGCT7OODfuyj4y'],
-  // --- ΧΑΡΤΙΚΑ ---
   ['χαρτ', 'b2a17c2ad4235ea8574d6027639e561f'],
 ]
 
-function getCategoryId(query) {
-  const q = normalize(query)
+function getCategoryId(q) {
+  const norm = normalize(q)
   for (const [keyword, catId] of CATEGORY_MAP) {
-    if (q.includes(normalize(keyword))) return catId
+    if (norm.includes(normalize(keyword))) return catId
   }
   return null
 }
@@ -131,10 +128,17 @@ export default {
           page_size: 30,
           sort_by: 'unit_price',
           sort_order: 'asc',
-          title: q,
           countries: ['GR'],
         }
-        if (categoryId) body.category = categoryId
+
+        if (categoryId) {
+          // Έχουμε exact category match → μόνο category, χωρίς title
+          // Αλλιώς φέρνει πίτες/άσχετα που απλώς "αναφέρουν" τη λέξη
+          body.category = categoryId
+        } else {
+          // Δεν ξέρουμε κατηγορία → free text search
+          body.title = q
+        }
 
         const res = await fetch('https://api.posokanei.gov.gr/products/search', {
           method: 'POST',
