@@ -1,38 +1,56 @@
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': 'https://golistiq.com',
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type',
 }
 
-const BASE = 'https://e-katanalotis.gov.gr/api'
-
 export default {
-  async fetch(request, env) {
-    if (request.method === 'OPTIONS') {
-      return new Response(null, { headers: CORS_HEADERS })
-    }
+  async fetch(request) {
+    if (request.method === 'OPTIONS') return new Response(null, { headers: CORS })
 
     const url = new URL(request.url)
-    const path = url.pathname.replace('/api', '')
-    const search = url.search
-    const target = `${BASE}${path}${search}`
+    const path = url.pathname
 
-    try {
-      const res = await fetch(target, {
-        headers: {
-          'Accept': 'application/json',
-          'User-Agent': 'Mozilla/5.0',
-        }
+    // Search: GET /search?q=γάλα
+    if (path === '/search') {
+      const q = url.searchParams.get('q') || ''
+      const res = await fetch('https://api.posokanei.gov.gr/products/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ page: 1, page_size: 15, sort_by: 'name', sort_order: 'asc', title: q })
       })
       const data = await res.json()
       return new Response(JSON.stringify(data), {
-        headers: { 'Content-Type': 'application/json', ...CORS_HEADERS }
-      })
-    } catch (e) {
-      return new Response(JSON.stringify({ error: e.message }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json', ...CORS_HEADERS }
+        headers: { 'Content-Type': 'application/json', ...CORS }
       })
     }
+
+    // Barcode: GET /barcode/5201234567890
+    if (path.startsWith('/barcode/')) {
+      const barcode = path.split('/barcode/')[1]
+      const res = await fetch('https://api.posokanei.gov.gr/products/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ page: 1, page_size: 5, barcode: barcode })
+      })
+      const data = await res.json()
+      return new Response(JSON.stringify(data), {
+        headers: { 'Content-Type': 'application/json', ...CORS }
+      })
+    }
+
+    // Product prices: GET /prices/PRODUCT_ID
+    if (path.startsWith('/prices/')) {
+      const id = path.split('/prices/')[1]
+      const res = await fetch(`https://api.posokanei.gov.gr/products/${id}/prices`, {
+        headers: { 'Content-Type': 'application/json' }
+      })
+      const data = await res.json()
+      return new Response(JSON.stringify(data), {
+        headers: { 'Content-Type': 'application/json', ...CORS }
+      })
+    }
+
+    return new Response('Not found', { status: 404, headers: CORS })
   }
 }
