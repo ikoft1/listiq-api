@@ -131,14 +131,12 @@ export default {
           countries: ['GR'],
         }
 
-        if (categoryId) {
-          // Έχουμε exact category match → μόνο category, χωρίς title
-          // Αλλιώς φέρνει πίτες/άσχετα που απλώς "αναφέρουν" τη λέξη
-          body.category = categoryId
-        } else {
-          // Δεν ξέρουμε κατηγορία → free text search
-          body.title = q
-        }
+       if (categoryId) {
+  body.category = categoryId
+  body.title = q
+} else {
+  body.title = q
+}
 
         const res = await fetch('https://api.posokanei.gov.gr/products/search', {
           method: 'POST',
