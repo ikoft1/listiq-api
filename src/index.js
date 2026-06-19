@@ -131,12 +131,11 @@ export default {
           countries: ['GR'],
         }
 
-     if (categoryId) {
-  body.category = categoryId
+   if (categoryId) {
+  body.category_id = categoryId  // ← category_id όχι category
 } else {
   body.title = q
 }
-
         const res = await fetch('https://api.posokanei.gov.gr/products/search', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
