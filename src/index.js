@@ -163,7 +163,7 @@ if (path.startsWith('/product/')) {
         const res = await fetch('https://api.posokanei.gov.gr/products/search', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ page: 1, page_size: 5, barcode })
+         body: JSON.stringify({ page: 1, page_size: 5, keyvoto_ids: [barcode] })
         })
         const data = await res.json()
         return new Response(JSON.stringify(data), {
