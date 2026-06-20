@@ -111,6 +111,12 @@ function getCategoryId(q) {
   return null
 }
 
+const API_HEADERS = {
+  'Content-Type': 'application/json',
+  'x-app-version': '1.0.0',
+  'x-platform': 'flutter-web',
+}
+
 export default {
   async fetch(request) {
     if (request.method === 'OPTIONS') return new Response(null, { headers: CORS })
@@ -130,15 +136,14 @@ export default {
           sort_order: 'asc',
           countries: ['GR'],
         }
-
-   if (categoryId) {
-  body.category_id = categoryId  // ← category_id όχι category
-} else {
-  body.title = q
-}
+        if (categoryId) {
+          body.category_id = categoryId
+        } else {
+          body.title = q
+        }
         const res = await fetch('https://api.posokanei.gov.gr/products/search', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: API_HEADERS,
           body: JSON.stringify(body)
         })
         const data = await res.json()
@@ -146,25 +151,26 @@ export default {
           headers: { 'Content-Type': 'application/json', ...CORS }
         })
       }
-if (path.startsWith('/product/')) {
-  const productId = path.split('/product/')[1]
-  const res = await fetch('https://api.posokanei.gov.gr/products/search', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ page: 1, page_size: 1, id: productId })
-  })
-  const data = await res.json()
-  return new Response(JSON.stringify(data), {
-    headers: { 'Content-Type': 'application/json', ...CORS }
-  })
-}
+
+      if (path.startsWith('/product/')) {
+        const productId = path.split('/product/')[1]
+        const res = await fetch(
+          `https://api.posokanei.gov.gr/products/${productId}?countries=all`,
+          { headers: API_HEADERS }
+        )
+        const data = await res.json()
+        // Wrap σε products array για συμβατότητα
+        return new Response(JSON.stringify({ products: [data] }), {
+          headers: { 'Content-Type': 'application/json', ...CORS }
+        })
+      }
+
       if (path.startsWith('/barcode/')) {
         const barcode = path.split('/barcode/')[1]
-        const res = await fetch('https://api.posokanei.gov.gr/products/search', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-         body: JSON.stringify({ page: 1, page_size: 5, title: barcode })
-        })
+        const res = await fetch(
+          `https://api.posokanei.gov.gr/products?keyvoto_id=${barcode}&countries=all`,
+          { headers: API_HEADERS }
+        )
         const data = await res.json()
         return new Response(JSON.stringify(data), {
           headers: { 'Content-Type': 'application/json', ...CORS }
